@@ -33,7 +33,7 @@ export default function App() {
 const style = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: '#181A1B',
         justifyContent: 'center',
         alignContent: 'center',
         alignItems: 'center',
@@ -48,11 +48,11 @@ const style = StyleSheet.create({
         fontWeight: 'bold',
     },
     input: {
-        backgroundColor: '#DDD',
+        backgroundColor: '#2B2F31',
         borderRadius: 10,
         margin: 15,
         padding: 10,
-        color: '#000',
+        color: '#fff',
         fontSize: 23,
         textAlign: 'center',
     },
