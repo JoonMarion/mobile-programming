@@ -173,7 +173,7 @@ const Phonebook = () => {
             ) : (
                 <ScrollView>
                     <Container>
-                        {contacts.map((contact, index) => {
+                        {filteredContacts.map((contact, index) => {
                             const [contactName, contactNumber] = contact.split(': ');
                             return (
                                 <Contact
