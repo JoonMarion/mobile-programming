@@ -1,82 +1,100 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components/native';
-import { Button } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import axios from 'axios';
+import { StatusBar } from 'expo-status-bar';
 
-const Container = styled.View`
-    flex: 1;
-    padding: 20px;
-`;
+const BASE_URL = 'https://economia.awesomeapi.com.br/last/';
 
-const Title = styled.Text`
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-`;
-
-const Contact = styled.Text`
-    font-size: 18px;
-    margin-bottom: 10px;
-`;
-
-const InputPhonebook = styled.TextInput`
-    height: 40px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 10px;
-`;
-
-const Phonebook = () => {
-    const [contacts, setContacts] = useState([]);
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
+const ConversorDeMoedas = () => {
+    const [usdRate, setUsdRate] = useState('');
+    const [eurRate, setEurRate] = useState('');
+    const [inputValue, setInputValue] = useState('');
+    const [convertedToUSD, setConvertedToUSD] = useState('');
+    const [convertedToEUR, setConvertedToEUR] = useState('');
 
     useEffect(() => {
-        loadContacts();
+        fetchExchangeRates();
     }, []);
 
-    const loadContacts = async () => {
+    const fetchExchangeRates = async () => {
         try {
-            const storedContacts = await AsyncStorage.getItem('contacts');
-            if (storedContacts) {
-                setContacts(JSON.parse(storedContacts));
-            }
+            const response = await axios.get(`${BASE_URL}USD-BRL,EUR-BRL`);
+            const { bid: usdBid } = response.data.USDBRL;
+            const { bid: eurBid } = response.data.EURBRL;
+            setUsdRate(usdBid);
+            setEurRate(eurBid);
         } catch (error) {
-            console.log('Error loading contacts:', error);
+            console.log(error);
         }
     };
 
-    const saveContacts = async () => {
-        try {
-            await AsyncStorage.setItem('contacts', JSON.stringify(contacts));
-        } catch (error) {
-            console.log('Error saving contacts:', error);
-        }
+    const convertToUSD = () => {
+        const converted = parseFloat(inputValue) / usdRate;
+        setConvertedToUSD(converted.toFixed(2));
+        setConvertedToEUR('');
     };
 
-    const addContact = () => {
-        const newContact = `${name}: ${phone}`;
-        setContacts([...contacts, newContact]);
-        setName('');
-        setPhone('');
+    const convertToEUR = () => {
+        const converted = parseFloat(inputValue) / eurRate;
+        setConvertedToEUR(converted.toFixed(2));
+        setConvertedToUSD('');
     };
-
-    useEffect(() => {
-        saveContacts();
-    }, [contacts]);
 
     return (
-        <Container>
-            <Title>Agenda Telefônica</Title>
-            {contacts.map((contact, index) => (
-                <Contact key={index}>{contact}</Contact>
-            ))}
-            <InputPhonebook placeholder="Nome" value={name} onChangeText={(text) => setName(text)} />
-            <InputPhonebook placeholder="Telefone" value={phone} onChangeText={(text) => setPhone(text)} />
-            <Button title="Adicionar Contato" onPress={addContact} />
-        </Container>
+        <View style={styles.container}>
+            <StatusBar style="auto" />
+            <Text style={styles.title}>Conversor de Moedas do(a) Aluno(a)</Text>
+            <TextInput
+                style={styles.input}
+                placeholder="Digite o valor em reais"
+                onChangeText={(value) => setInputValue(value)}
+                keyboardType="numeric"
+            />
+            <View style={styles.buttonContainer}>
+                <Button title="Converter para Dólar" onPress={convertToUSD} color="white" />
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button title="Converter para Euro" onPress={convertToEUR} color="white" />
+            </View>
+            {convertedToUSD > 0 && <Text style={styles.resultText}>Valor convertido para Dólar: {convertedToUSD}</Text>}
+            {convertedToEUR > 0 && <Text style={styles.resultText}>Valor convertido para Euro: {convertedToEUR}</Text>}
+        </View>
     );
 };
 
-export default Phonebook;
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        margin: 20,
+    },
+    input: {
+        width: '100%',
+        height: 40,
+        borderWidth: 1,
+        borderColor: 'blue',
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginBottom: 20,
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginBottom: 20,
+        backgroundColor: 'blue',
+        borderRadius: 5,
+    },
+    resultText: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+});
+
+export default ConversorDeMoedas;
